@@ -36,15 +36,15 @@ if output_directory_exists == False:
 	while create_dir != "Y" and create_dir != "N":
 		create_dir = input ("Directory does not exist. Create directory? (Y/N): ")
 
-if create_dir == "Y":
-	# Okay then, I'll make the directory myself you lazy toad
-	os.mkdir(output_directory)
+	if create_dir == "Y":
+		# Okay then, I'll make the directory myself you lazy toad
+		os.mkdir(output_directory)
 	
-if create_dir == "N":
-	# We could loop back and ask them a directory again, but...I can't be bothered.
-	print ("Directory does not exist, user declined creation")
-	print ("Program terminating")
-	exit ()
+	if create_dir == "N":
+		# We could loop back and ask them a directory again, but...I can't be bothered.
+		print ("Directory does not exist, user declined creation")
+		print ("Program terminating")
+		exit ()
 
 
 if allasone == "A":
