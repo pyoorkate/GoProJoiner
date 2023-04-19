@@ -16,13 +16,13 @@ secondary_segments = sorted([x for x in video_files if re.search(r'^GP\d+\.MP4$'
 with open("sorted_files.txt", "w") as f:
 
 	for i, primary_file in enumerate(primary_segments):
-		print(f"{i+1}st Primary Segment")
+		print(f"Primary Segment {i+1}")
 		print(primary_file)
 		# Write the primary segment file name to the output file
 		f.write("file\t" + primary_file + "\n")
 		primary_segment_num = int(re.search(r'^GOPR(\d+)\.MP4$', primary_file).group(1))
 		matching_secondary_segments = sorted([x for x in secondary_segments if primary_segment_num == int(re.search(r'^GP\d+(\d{4})\.MP4$', x).group(1)[:4])])
-		print("Secondary segments")
+		print("Matched Secondary segments")
 		for secondary_file in matching_secondary_segments:
 			print(secondary_file)
 			# Write the secondary segment filenames to output file
