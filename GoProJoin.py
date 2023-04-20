@@ -97,7 +97,8 @@ if allasone == "A":
 				f.write("file\t" + secondary_file + "\n")
 
 	print("List Complete...")
-	outputname = input("Please enter filename for joined output: ")
+	outputname = input("Please enter filename for joined output (without file extension): ")
+	outputname = outputname + ".mp4"
 	# join together yon filename and the path input earlier
 	output_full_filename = os.path.join(output_directory, outputname)
 	# Call FFMPEG using the full filename and directory for output
@@ -127,7 +128,7 @@ if allasone == "I":
 		f.close()
 
 	print("List Complete...")
-	outputname = input("Please enter basename for joined output: ")
+	outputname = input("Please enter basename for joined output (without file extension): ")
 	# initiate loop to call FFMPEG
 	# subtract one from segment count because the filenames start at 0, and segment count started at 1.
 	# I could use another variable here, but why would I?
@@ -148,6 +149,6 @@ if allasone == "I":
 	exit()
 	
 else:
-	print("Uncaught error (I mean, and I swear I did tons of error checking, so this is totally unexpected... ;) )")
+	print("Uncaught error (I mean, I did tons of error checking, so this is totally unexpected... ;) )")
 	exit()
 	
