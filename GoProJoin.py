@@ -3,8 +3,8 @@ import re
 import subprocess
 
 print("Less and less basic GoPro File Sort-and-Concatinator")
-print("====================================================")
-# Written using ChatGPT, a lot of fiddling to get it to kinda work, then me polishing the turd
+print("======================v0.2==========================")
+# Initially written using ChatGPT, a lot of fiddling to get it to kinda work, then me polishing the turd
 print("Operates in current working directory & assumes FFMPEG is available in your path\n\n")
 
 video_files = os.listdir('.')
@@ -108,7 +108,7 @@ if allasone == "A":
 
 if allasone == "I":
 	segmentcount = 0
-	#we'll increment this counter for every file segment, that way when we get to writing the files we know how many.
+	# We'll increment this counter for every file segment, that way when we get to writing the files we know how many.
 	# Don't open file yet...because we need that to happen separately for each segment.
 	print("The following files and segments have been located:/n")
 	for i, primary_file in enumerate(primary_segments):
@@ -136,12 +136,16 @@ if allasone == "I":
 	while segmentcount > -1:
 		# Munge together a filename containing the current segment and the all the other bits of the name
 		current_segment_file = "sorted_file" + str(segmentcount) + ".txt"
+		# print(f"\nDEBUG OUTPUT: {current_segment_file}")
 		# join together yon filename and the path input earlier
 		segment_count_stringified = str(segmentcount)
-		output_full_filename = os.path.join(output_directory, outputname, segment_count_stringified + ".MP4")
-		print(f"Launching FFMPEG for " + output_full_filename )
+		output_full_name = outputname + segment_count_stringified + ".mp4"
+		output_full_filename_with_path = os.path.join(output_directory, output_full_name)
+		# print(f"\nDEBUG OUTPUT: {output_full_filename}")
+		# print(f"Launching FFMPEG for " + output_full_filename )
 		# Call FFMPEG using the sorted_files filename as a source and outputting to outputname
-		subprocess.call(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename ])
+		# print(f"\nDEBUG OUTPUT: {current_segment_file}")
+		subprocess.call(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
 		segmentcount = segmentcount - 1
 		
 		
