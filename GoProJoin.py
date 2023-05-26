@@ -102,7 +102,7 @@ if allasone == "A":
 	# join together yon filename and the path input earlier
 	output_full_filename = os.path.join(output_directory, outputname)
 	# Call FFMPEG using the full filename and directory for output
-	subprocess.call(['ffmpeg', '-y', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename ])
+	subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename ])
 	print(f"Hopefully you have a file called {outputname} in {output_directory}. It should have all the files combined in one.")
 	exit()
 
@@ -145,7 +145,7 @@ if allasone == "I":
 		# print(f"Launching FFMPEG for " + output_full_filename )
 		# Call FFMPEG using the sorted_files filename as a source and outputting to outputname
 		# print(f"\nDEBUG OUTPUT: {current_segment_file}")
-		subprocess.call(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
+		subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
 		segmentcount = segmentcount - 1
 		
 		
