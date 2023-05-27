@@ -2,37 +2,172 @@ import os
 import re
 import subprocess
 
+# CHANGE
+input_directory = os.getcwd()
+input_directory_contents = os.listdir(input_directory)
+video_files = [fname for fname in input_directory_contents if fname.endswith('.MP4')] #Filtering only the MP4 files.
+
 print("Less and less basic GoPro File Sort-and-Concatinator")
-print("======================v0.2==========================")
-# Initially written using ChatGPT, a lot of fiddling to get it to kinda work, then me polishing the turd
+print("======================v0.3==========================")
+print("Should work for all GoPros from 2 through 11")
 print("Operates in current working directory & assumes FFMPEG is available in your path\n\n")
 
-video_files = os.listdir('.')
-
-# Do they use a custom file naming convention (Like Nikki does, gods damn it)
+# Does user use a custom file naming convention
+# At present custom naming is just playing fast and loose and just uses a wildcard regex
 custom_naming = ""
-print("Do you use custom or default gopro filenames")
+print("Do you use custom or default GoPro filenames")
 print("============================================\n")
-print("At the moment, custom just assumes that anything before \nGOPR or GP is the custom name. \nIt will match anything with GOPR or GP in the name")
-print("There's a very faint possibility that I might fix this at some point.")
+print("Note: Custom assumes that anything before the standard camera prefix is the custom name")
 print("\n(D)efault")
 print("(C)ustom\n")
-custom_naming = input("Custom or Default: ")
 while custom_naming != "D" and custom_naming != "C":
-	custom_naming = input("Please choose D or C: ")
-	
-if custom_naming == "D":
-	primary_pattern = r'^GOPR\d+\.MP4$'
-	primary_pattern_writing = r'^GOPR(\d+)\.MP4$'
-	secondary_pattern = r'^GP\d+\.MP4$'
-	secondary_pattern_writing = r'^GP\d+(\d{4})\.MP4$'
-	
-if custom_naming == "C":
+ 	custom_naming = input("Please choose D or C: ")
+
+# Identify Camera Type
+# Rather than identify camera type separately for custom/default naming, we'll *presume* no one is silly enough to use the same
+# name as a gopro already uses as its prefex, and go with a little wildcad regex lovin'
+# Once camera type is identified we set the pattern we'll use to sort them later. 
+camera_type = ""
+chapters = 0
+for element in video_files:
+	# GoPro 5
+	match = re.search (r'^.*GOPR\d+\.MP4$', video_files) # GoPro 2-5 naming convention, will check for chapters in a moment
+	if match:
+		camera_type = "GP5"
+		if custom_naming == "D":
+			primary_pattern = r'^GOPR\d+\.MP4$'
+			primary_pattern_writing = r'^GOPR(\d+)\.MP4$'
+		if custom_naming == "C":
+		 	primary_pattern = r'^.*GOPR\d+\.MP4$'
+		 	primary_pattern_writing = r'^.*GOPR(\d+)\.MP4$'	
+	match = re.search (r'^.*GP\d+\.MP4$', video_files) # GoPro 2-5 naming convention and has chapters
+	if match:
+		chapters = 1
+		if custom_naming == "D":
+			secondary_pattern = r'^GP\d+\.MP4$'
+			secondary_pattern_writing = r'^GP\d+(\d{4})\.MP4$'
+		if custom_naming == "C":
+			secondary_pattern = r'^.*GP\d+\.MP4$'
+			secondary_pattern_writing = r'^.*GP\d+(\d{4})\.MP4$'
+
+	# GoPro Fusion
+	match = re.search (r'^.*GPFR\d+\.MP4$', video_files) # GoPro Fusion naming convention, will check for chapters in a moment
+	if match:
+		camera_type = "FUSION"
+		if custom_naming == "D":
+			primary_pattern = r'^GFPR\d+\.MP4$'
+			primary_pattern_writing = r'^GFPR(\d+)\.MP4$'
+		if custom_naming == "C":
+			primary_pattern = r'^.*GFPR\d+\.MP4$'
+			primary_pattern_writing = r'^.*GFPR(\d+)\.MP4$'
+	match = re.search (r'^.*GF\d+\.MP4$', video_files) # GoPro Fusion naming convention, and has chapters
+	if match:
+		chapters = 1
+		if custom_naming == "D":
+			secondary_pattern = r'^GF\d+\.MP4$'
+			secondary_pattern_writing = r'^GF\d+(\d{4})\.MP4$'
+		if custom_naming == "C":
+			secondary_pattern = r'^.*GF\d+\.MP4$'
+			secondary_pattern_writing = r'^.*GF\d+(\d{4})\.MP4$'
+
+	# GoPro 360 video
+	match = re.search (r'^.*GS\d+\.MP4$', video_files) # 360 naming convention, difficult to test for chapters so just going to assume yes at the moment
+	if match:
+		camera_type = "360"
+		chapters = 1
+		if custom_naming == "D":
+			primary_pattern = r'^GS\d+\.MP4$'
+			primary_pattern_writing = r'^GS(\d+)\.MP4$'
+			secondary_pattern = r'^GS\d+\.MP4$'
+			secondary_pattern_writing = r'^GS\d+(\d{4})\.MP4$'
+		if custom_naming == "C":
+			primary_pattern = r'^.*GS\d+\.MP4$'
+			primary_pattern_writing = r'^.*GS(\d+)\.MP4$'
+			secondary_pattern = r'^.*GS\d+\.MP4$'
+			secondary_pattern_writing = r'^.*GS\d+(\d{4})\.MP4$'
+
+	# GoPro Hero 6-11
+	# Filenames can start GH or GS
+	match = re.search (r'^.*GH\d+\.MP4$', video_files) # GoPro Hero naming convention, will check for chapters in a moment
+	if match:
+		camera_type = "HERO_H"
+		if custom_naming == "D":
+			primary_pattern = r'^GH01\d+\.MP4$'
+			primary_pattern_writing = r'^GH(\d+)\.MP4$'
+		if custom_naming == "C":
+			primary_pattern = r'^.*GH01\d+\.MP4$'
+			primary_pattern_writing = r'^.*GH(\d+)\.MP4$'
+	match = re.search (r'^.*GX\d+\.MP4$', video_files) # GoPro Hero naming convention, will check for chapters in a moment
+	if match:
+		camera_type = "HERO_X"
+		if custom_naming == "D":
+			primary_pattern = r'^GX01\d+\.MP4$'
+			primary_pattern_writing = r'^GX(\d+)\.MP4$'
+		if custom_naming == "C":
+			primary_pattern = r'^.*GX01\d+\.MP4$'
+			primary_pattern_writing = r'^.*GX(\d+)\.MP4$'
+	match = re.search (r'^.*GH02\d+\.MP4$', video_files) # GoPro Hero naming convention, assume that if it has a GH02 it has chapters
+	if match:
+		chapters = 1
+		if custom_naming == "D":
+			secondary_pattern = r'^GH([0-9][2-9])|([1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^GH([0-9][2-9])|([1-9][0-9])(\d{4})\.MP4$'
+		if custom_naming == "C":
+			secondary_pattern = r'^.*GH([0-9][2-9])|([1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^.*GH([0-9][2-9])|([1-9][0-9])(\d{4})\.MP4$'
+	match = re.search (r'^.*GX02\d+\.MP4$', video_files) # GoPro Hero naming convention, assume that if it has a GX02 it has chapters
+	if match:
+		chapters = 1
+		if custom_naming == "D":
+			secondary_pattern = r'^GX([0-9][2-9])|([1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^GX([0-9][2-9])|([1-9][0-9])(\d{4})\.MP4$'
+		if custom_naming == "C":
+			secondary_pattern = r'^.*GX([0-9][2-9])|([1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^.*GX([0-9][2-9])|([1-9][0-9])(\d{4})\.MP4$'
+
+	# Check for GoPro Hero looping video because we're not handling those yet
+	if match == re.search (r'^.*GH[a-zA-Z][a-zA-Z]\d+\.MP4$', video_files): 
+		print("\nLooping Video from GoPro hero detected. These are not currently handled. Exiting")
+		exit()
+
+	# SJCam
+	# Add SJCAM HERE!
+
+
+print(f"\nDetected Camera Type: {camera_type}")
+if chapters == 0:
+	print("\nNo chapters detected, assuming all single camera starts")
+if chapters == 1:
+	print("\nMultiple chapters detected")
+
+
+
+# Do they use a custom file naming convention (Like Nikki does, gods damn it)
+# custom_naming = ""
+# print("Do you use custom or default gopro filenames")
+# print("============================================\n")
+# print("At the moment, custom just assumes that anything before \nGOPR or GP is the custom name. \nIt will match anything with GOPR or GP in the name")
+# print("There's a very faint possibility that I might fix this at some point.")
+# print("\n(D)efault")
+# print("(C)ustom\n")
+# custom_naming = input("Custom or Default: ")
+# while custom_naming != "D" and custom_naming != "C":
+# 	custom_naming = input("Please choose D or C: ")
+# 	
+# if custom_naming == "D":
+# 	primary_pattern = r'^GOPR\d+\.MP4$'
+# 	primary_pattern_writing = r'^GOPR(\d+)\.MP4$'
+# 	secondary_pattern = r'^GP\d+\.MP4$'
+# 	secondary_pattern_writing = r'^GP\d+(\d{4})\.MP4$'
+# 	
+# if custom_naming == "C":
 # At present custom naming is just playing fast and loose.
-	primary_pattern = r'^.*GOPR\d+\.MP4$'
-	primary_pattern_writing = r'^.*GOPR(\d+)\.MP4$'	
-	secondary_pattern = r'^.*GP\d+\.MP4$'
-	secondary_pattern_writing = r'^.*GP\d+(\d{4})\.MP4$'
+# 	primary_pattern = r'^.*GOPR\d+\.MP4$'
+# 	primary_pattern_writing = r'^.*GOPR(\d+)\.MP4$'	
+# 	secondary_pattern = r'^.*GP\d+\.MP4$'
+# 	secondary_pattern_writing = r'^.*GP\d+(\d{4})\.MP4$'
+
+
 
 # Match those files
 primary_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
@@ -42,6 +177,8 @@ secondary_segments = sorted([x for x in video_files if re.search(secondary_patte
 # Basic matching	
 # primary_segments = sorted([x for x in video_files if re.search(r'^GOPR\d+\.MP4$', x)])
 # secondary_segments = sorted([x for x in video_files if re.search(r'^GP\d+\.MP4$', x)])
+
+
 
 # Identify whether the user wants all files combined together, or each camera start
 # as a separate file
@@ -55,6 +192,7 @@ allasone = input("Ouput type: ")
 while allasone != "A" and allasone != "I":
 	allasone = input("Ouput type (either A or I): ")
 
+# End CHANGE
 
 # Do they want to output to a different directory (just here because my friend's script was posher than mine)
 # Get an output directory, if this is blank use the current working directory
@@ -155,4 +293,3 @@ if allasone == "I":
 else:
 	print("Uncaught error (I mean, I did tons of error checking, so this is totally unexpected... ;) )")
 	exit()
-	
