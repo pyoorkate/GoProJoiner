@@ -145,14 +145,14 @@ if chapters == 0:
 	print("\nNo chapters detected, assuming all single camera starts")
 	while allasone != "C" and allasone != "E":
 		allasone = input("(C)ombine into one file or (E)xit: ")
-	if allasone == "E"
+	if allasone == "E":
 		exit()
 
 if chapters == 1:
 	print("\nMultiple chapters detected")
 	while allasone != "A" and allasone != "I" and allasone != "E":
 		allasone = input("(C)ombine into one file, (I)ndividual files for each camera start or (E)xit: ")	
-	if allasone == "E"
+	if allasone == "E":
 		exit()
 
 # Do they want to output to a different directory (just here because my friend's script was posher than mine)
