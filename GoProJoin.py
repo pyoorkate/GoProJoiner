@@ -39,7 +39,8 @@ for video_file in video_files:
 			primary_pattern_writing = r'^GOPR(\d+)\.MP4$'
 		if custom_naming == "C":
 		 	primary_pattern = r'^.*GOPR\d+\.MP4$'
-		 	primary_pattern_writing = r'^.*GOPR(\d+)\.MP4$'	
+		 	primary_pattern_writing = r'^.*GOPR(\d+)\.MP4$'
+	match = None	 		
 	match = re.search (r'^.*GP\d+\.MP4$', video_file) # GoPro 2-5 naming convention and has chapters
 	if match:
 		chapters = 1
@@ -51,6 +52,7 @@ for video_file in video_files:
 			secondary_pattern_writing = r'^.*GP\d+(\d{4})\.MP4$'
 
 	# GoPro Fusion
+	match = None
 	match = re.search (r'^.*GPFR\d+\.MP4$', video_file) # GoPro Fusion naming convention, will check for chapters in a moment
 	if match:
 		camera_type = "FUSION"
@@ -60,6 +62,7 @@ for video_file in video_files:
 		if custom_naming == "C":
 			primary_pattern = r'^.*GFPR\d+\.MP4$'
 			primary_pattern_writing = r'^.*GFPR(\d+)\.MP4$'
+	match = None
 	match = re.search (r'^.*GF\d+\.MP4$', video_file) # GoPro Fusion naming convention, and has chapters
 	if match:
 		chapters = 1
@@ -71,6 +74,7 @@ for video_file in video_files:
 			secondary_pattern_writing = r'^.*GF\d+(\d{4})\.MP4$'
 
 	# GoPro 360 video
+	match = None
 	match = re.search (r'^.*GS\d+\.MP4$', video_file) # 360 naming convention, difficult to test for chapters so just going to assume yes at the moment
 	if match:
 		camera_type = "360"
@@ -88,6 +92,7 @@ for video_file in video_files:
 
 	# GoPro Hero 6-11
 	# Filenames can start GH or GS
+	match = None
 	match = re.search (r'^.*GH\d+\.MP4$', video_file) # GoPro Hero naming convention, will check for chapters in a moment
 	if match:
 		camera_type = "HERO_H"
@@ -97,6 +102,7 @@ for video_file in video_files:
 		if custom_naming == "C":
 			primary_pattern = r'^.*GH01\d+\.MP4$'
 			primary_pattern_writing = r'^.*GH(\d+)\.MP4$'
+	match = None
 	match = re.search (r'^.*GX\d+\.MP4$', video_file) # GoPro Hero naming convention, will check for chapters in a moment
 	if match:
 		camera_type = "HERO_X"
@@ -106,6 +112,7 @@ for video_file in video_files:
 		if custom_naming == "C":
 			primary_pattern = r'^.*GX01\d+\.MP4$'
 			primary_pattern_writing = r'^.*GX(\d+)\.MP4$'
+	match = None
 	match = re.search (r'^.*GH02\d+\.MP4$', video_file) # GoPro Hero naming convention, assume that if it has a GH02 it has chapters
 	if match:
 		chapters = 1
@@ -115,6 +122,7 @@ for video_file in video_files:
 		if custom_naming == "C":
 			secondary_pattern = r'^.*GH(0[2-9]|[1-9][0-9])\d+\.MP4$'
 			secondary_pattern_writing = r'^.*GH(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
+	match = None
 	match = re.search (r'^.*GX02\d+\.MP4$', video_file) # GoPro Hero naming convention, assume that if it has a GX02 it has chapters
 	if match:
 		chapters = 1
