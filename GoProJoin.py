@@ -2,7 +2,6 @@ import os
 import re
 import subprocess
 
-# CHANGE
 input_directory = os.getcwd()
 input_directory_contents = os.listdir(input_directory)
 video_files = [fname for fname in input_directory_contents if fname.endswith('.MP4')] #Filtering only the MP4 files.
@@ -110,20 +109,20 @@ for element in video_files:
 	if match:
 		chapters = 1
 		if custom_naming == "D":
-			secondary_pattern = r'^GH([0-9][2-9])|([1-9][0-9])\d+\.MP4$'
-			secondary_pattern_writing = r'^GH([0-9][2-9])|([1-9][0-9])(\d{4})\.MP4$'
+			secondary_pattern = r'^GH(0[2-9]|[1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^GH(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
 		if custom_naming == "C":
-			secondary_pattern = r'^.*GH([0-9][2-9])|([1-9][0-9])\d+\.MP4$'
-			secondary_pattern_writing = r'^.*GH([0-9][2-9])|([1-9][0-9])(\d{4})\.MP4$'
+			secondary_pattern = r'^.*GH(0[2-9]|[1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^.*GH(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
 	match = re.search (r'^.*GX02\d+\.MP4$', video_files) # GoPro Hero naming convention, assume that if it has a GX02 it has chapters
 	if match:
 		chapters = 1
 		if custom_naming == "D":
-			secondary_pattern = r'^GX([0-9][2-9])|([1-9][0-9])\d+\.MP4$'
-			secondary_pattern_writing = r'^GX([0-9][2-9])|([1-9][0-9])(\d{4})\.MP4$'
+			secondary_pattern = r'^GX(0[2-9]|[1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^GX(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
 		if custom_naming == "C":
-			secondary_pattern = r'^.*GX([0-9][2-9])|([1-9][0-9])\d+\.MP4$'
-			secondary_pattern_writing = r'^.*GX([0-9][2-9])|([1-9][0-9])(\d{4})\.MP4$'
+			secondary_pattern = r'^.*GX(0[2-9]|[1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^.*GX(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
 
 	# Check for GoPro Hero looping video because we're not handling those yet
 	if match == re.search (r'^.*GH[a-zA-Z][a-zA-Z]\d+\.MP4$', video_files): 
@@ -134,65 +133,27 @@ for element in video_files:
 	# Add SJCAM HERE!
 
 
-print(f"\nDetected Camera Type: {camera_type}")
-if chapters == 0:
-	print("\nNo chapters detected, assuming all single camera starts")
-if chapters == 1:
-	print("\nMultiple chapters detected")
-
-
-
-# Do they use a custom file naming convention (Like Nikki does, gods damn it)
-# custom_naming = ""
-# print("Do you use custom or default gopro filenames")
-# print("============================================\n")
-# print("At the moment, custom just assumes that anything before \nGOPR or GP is the custom name. \nIt will match anything with GOPR or GP in the name")
-# print("There's a very faint possibility that I might fix this at some point.")
-# print("\n(D)efault")
-# print("(C)ustom\n")
-# custom_naming = input("Custom or Default: ")
-# while custom_naming != "D" and custom_naming != "C":
-# 	custom_naming = input("Please choose D or C: ")
-# 	
-# if custom_naming == "D":
-# 	primary_pattern = r'^GOPR\d+\.MP4$'
-# 	primary_pattern_writing = r'^GOPR(\d+)\.MP4$'
-# 	secondary_pattern = r'^GP\d+\.MP4$'
-# 	secondary_pattern_writing = r'^GP\d+(\d{4})\.MP4$'
-# 	
-# if custom_naming == "C":
-# At present custom naming is just playing fast and loose.
-# 	primary_pattern = r'^.*GOPR\d+\.MP4$'
-# 	primary_pattern_writing = r'^.*GOPR(\d+)\.MP4$'	
-# 	secondary_pattern = r'^.*GP\d+\.MP4$'
-# 	secondary_pattern_writing = r'^.*GP\d+(\d{4})\.MP4$'
-
-
-
 # Match those files
 primary_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
 secondary_segments = sorted([x for x in video_files if re.search(secondary_pattern, x)])
 
-
-# Basic matching	
-# primary_segments = sorted([x for x in video_files if re.search(r'^GOPR\d+\.MP4$', x)])
-# secondary_segments = sorted([x for x in video_files if re.search(r'^GP\d+\.MP4$', x)])
-
-
-
-# Identify whether the user wants all files combined together, or each camera start
-# as a separate file
+# If there are multiple chapters, identify whether the user wants all files combined 
+# together, or each camera start as a separate file
 allasone = ""
-print("\nChoose output type")
-print("==================\n")
-print("(A)ll as one file")
-print("(I)ndividual files for each camera start\n")
-allasone = input("Ouput type: ")
+print(f"\nDetected Camera Type: {camera_type}")
+if chapters == 0:
+	print("\nNo chapters detected, assuming all single camera starts")
+	while allasone != "C" and allasone != "E":
+		allasone = input("(C)ombine into one file or (E)xit: ")
+	if allasone == "E"
+		exit()
 
-while allasone != "A" and allasone != "I":
-	allasone = input("Ouput type (either A or I): ")
-
-# End CHANGE
+if chapters == 1:
+	print("\nMultiple chapters detected")
+	while allasone != "A" and allasone != "I" and allasone != "E":
+		allasone = input("(C)ombine into one file, (I)ndividual files for each camera start or (E)xit: ")	
+	if allasone == "E"
+		exit()
 
 # Do they want to output to a different directory (just here because my friend's script was posher than mine)
 # Get an output directory, if this is blank use the current working directory
@@ -217,7 +178,7 @@ if output_directory_exists == False:
 		exit ()
 
 
-if allasone == "A":
+if allasone == "C":
 	print("The following files and segments have been located:\n")
 	# Create a new file to write the sorted filenames to
 	with open("sorted_files.txt", "w") as f:
