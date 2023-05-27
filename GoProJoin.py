@@ -9,7 +9,7 @@ video_files = [fname for fname in input_directory_contents if fname.endswith('.M
 print("Less and less basic GoPro File Sort-and-Concatinator")
 print("======================v0.3==========================")
 print("Should work for all GoPros from 2 through 11")
-print("Operates in current working directory & assumes FFMPEG is available in your path\n\n")
+print("Operates in current working directory & assumes FFMPEG is available in your path\n")
 
 # Does user use a custom file naming convention
 # At present custom naming is just playing fast and loose and just uses a wildcard regex
@@ -28,18 +28,19 @@ while custom_naming != "D" and custom_naming != "C":
 # Once camera type is identified we set the pattern we'll use to sort them later. 
 camera_type = ""
 chapters = 0
-for element in video_files:
+for video_file in video_files:
 	# GoPro 5
-	match = re.search (r'^.*GOPR\d+\.MP4$', video_files) # GoPro 2-5 naming convention, will check for chapters in a moment
+	match = re.search (r'^.*GOPR\d+\.MP4$', video_file) # GoPro 2-5 naming convention, will check for chapters in a moment
 	if match:
 		camera_type = "GP5"
+		print(f"\nDetected Camera Type: {camera_type}")
 		if custom_naming == "D":
 			primary_pattern = r'^GOPR\d+\.MP4$'
 			primary_pattern_writing = r'^GOPR(\d+)\.MP4$'
 		if custom_naming == "C":
 		 	primary_pattern = r'^.*GOPR\d+\.MP4$'
 		 	primary_pattern_writing = r'^.*GOPR(\d+)\.MP4$'	
-	match = re.search (r'^.*GP\d+\.MP4$', video_files) # GoPro 2-5 naming convention and has chapters
+	match = re.search (r'^.*GP\d+\.MP4$', video_file) # GoPro 2-5 naming convention and has chapters
 	if match:
 		chapters = 1
 		if custom_naming == "D":
@@ -50,7 +51,7 @@ for element in video_files:
 			secondary_pattern_writing = r'^.*GP\d+(\d{4})\.MP4$'
 
 	# GoPro Fusion
-	match = re.search (r'^.*GPFR\d+\.MP4$', video_files) # GoPro Fusion naming convention, will check for chapters in a moment
+	match = re.search (r'^.*GPFR\d+\.MP4$', video_file) # GoPro Fusion naming convention, will check for chapters in a moment
 	if match:
 		camera_type = "FUSION"
 		if custom_naming == "D":
@@ -59,7 +60,7 @@ for element in video_files:
 		if custom_naming == "C":
 			primary_pattern = r'^.*GFPR\d+\.MP4$'
 			primary_pattern_writing = r'^.*GFPR(\d+)\.MP4$'
-	match = re.search (r'^.*GF\d+\.MP4$', video_files) # GoPro Fusion naming convention, and has chapters
+	match = re.search (r'^.*GF\d+\.MP4$', video_file) # GoPro Fusion naming convention, and has chapters
 	if match:
 		chapters = 1
 		if custom_naming == "D":
@@ -70,7 +71,7 @@ for element in video_files:
 			secondary_pattern_writing = r'^.*GF\d+(\d{4})\.MP4$'
 
 	# GoPro 360 video
-	match = re.search (r'^.*GS\d+\.MP4$', video_files) # 360 naming convention, difficult to test for chapters so just going to assume yes at the moment
+	match = re.search (r'^.*GS\d+\.MP4$', video_file) # 360 naming convention, difficult to test for chapters so just going to assume yes at the moment
 	if match:
 		camera_type = "360"
 		chapters = 1
@@ -87,7 +88,7 @@ for element in video_files:
 
 	# GoPro Hero 6-11
 	# Filenames can start GH or GS
-	match = re.search (r'^.*GH\d+\.MP4$', video_files) # GoPro Hero naming convention, will check for chapters in a moment
+	match = re.search (r'^.*GH\d+\.MP4$', video_file) # GoPro Hero naming convention, will check for chapters in a moment
 	if match:
 		camera_type = "HERO_H"
 		if custom_naming == "D":
@@ -96,7 +97,7 @@ for element in video_files:
 		if custom_naming == "C":
 			primary_pattern = r'^.*GH01\d+\.MP4$'
 			primary_pattern_writing = r'^.*GH(\d+)\.MP4$'
-	match = re.search (r'^.*GX\d+\.MP4$', video_files) # GoPro Hero naming convention, will check for chapters in a moment
+	match = re.search (r'^.*GX\d+\.MP4$', video_file) # GoPro Hero naming convention, will check for chapters in a moment
 	if match:
 		camera_type = "HERO_X"
 		if custom_naming == "D":
@@ -105,7 +106,7 @@ for element in video_files:
 		if custom_naming == "C":
 			primary_pattern = r'^.*GX01\d+\.MP4$'
 			primary_pattern_writing = r'^.*GX(\d+)\.MP4$'
-	match = re.search (r'^.*GH02\d+\.MP4$', video_files) # GoPro Hero naming convention, assume that if it has a GH02 it has chapters
+	match = re.search (r'^.*GH02\d+\.MP4$', video_file) # GoPro Hero naming convention, assume that if it has a GH02 it has chapters
 	if match:
 		chapters = 1
 		if custom_naming == "D":
@@ -114,7 +115,7 @@ for element in video_files:
 		if custom_naming == "C":
 			secondary_pattern = r'^.*GH(0[2-9]|[1-9][0-9])\d+\.MP4$'
 			secondary_pattern_writing = r'^.*GH(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
-	match = re.search (r'^.*GX02\d+\.MP4$', video_files) # GoPro Hero naming convention, assume that if it has a GX02 it has chapters
+	match = re.search (r'^.*GX02\d+\.MP4$', video_file) # GoPro Hero naming convention, assume that if it has a GX02 it has chapters
 	if match:
 		chapters = 1
 		if custom_naming == "D":
@@ -125,7 +126,8 @@ for element in video_files:
 			secondary_pattern_writing = r'^.*GX(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
 
 	# Check for GoPro Hero looping video because we're not handling those yet
-	if match == re.search (r'^.*GH[a-zA-Z][a-zA-Z]\d+\.MP4$', video_files): 
+	looping_check = re.search (r'^.*GH[a-zA-Z][a-zA-Z]\d+\.MP4$', video_file) 
+	if looping_check:	
 		print("\nLooping Video from GoPro hero detected. These are not currently handled. Exiting")
 		exit()
 
