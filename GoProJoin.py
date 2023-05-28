@@ -22,6 +22,7 @@ print("(C)ustom\n")
 while custom_naming != "D" and custom_naming != "C":
  	custom_naming = input("Please choose D or C: ")
 
+
 # Identify Camera Type
 # Rather than identify camera type separately for custom/default naming, we'll *presume* no one is silly enough to use the same
 # name as a gopro already uses as its prefex, and go with a little wildcad regex lovin'
@@ -57,21 +58,30 @@ for video_file in video_files:
 	if match:
 		camera_type = "FUSION"
 		if custom_naming == "D":
-			primary_pattern = r'^GFPR\d+\.MP4$'
-			primary_pattern_writing = r'^GFPR(\d+)\.MP4$'
+			primary_pattern_front = r'^GPFR\d+\.MP4$'
+			primary_pattern_writing_front = r'^GPFR(\d+)\.MP4$'
+			primary_pattern_back = r'^GPBK\d+\.MP4$'
+			primary_pattern_writing_back = r'^GPBK(\d+)\.MP4$'
 		if custom_naming == "C":
-			primary_pattern = r'^.*GFPR\d+\.MP4$'
-			primary_pattern_writing = r'^.*GFPR(\d+)\.MP4$'
+			primary_pattern_front = r'^.*GPFR\d+\.MP4$'
+			primary_pattern_writing_front = r'^.*GPFR(\d+)\.MP4$'
+			primary_pattern_back = r'^.*GPBK\d+\.MP4$'
+			primary_pattern_writing_back = r'^.*GPBK(\d+)\.MP4$'
 	match = None
 	match = re.search (r'^.*GF\d+\.MP4$', video_file) # GoPro Fusion naming convention, and has chapters
 	if match:
 		chapters = 1
 		if custom_naming == "D":
-			secondary_pattern = r'^GF\d+\.MP4$'
-			secondary_pattern_writing = r'^GF\d+(\d{4})\.MP4$'
+			secondary_pattern_front = r'^GF\d+\.MP4$'
+			secondary_pattern_writing_front = r'^GF\d+(\d{4})\.MP4$'
+			secondary_pattern_back = r'^GB\d+\.MP4$'
+			secondary_pattern_writing_back = r'^GB\d+(\d{4})\.MP4$'
 		if custom_naming == "C":
-			secondary_pattern = r'^.*GF\d+\.MP4$'
-			secondary_pattern_writing = r'^.*GF\d+(\d{4})\.MP4$'
+			secondary_pattern_front = r'^.*GF\d+\.MP4$'
+			secondary_pattern_writing_front = r'^.*GF\d+(\d{4})\.MP4$'
+			secondary_pattern_back = r'^GB\d+\.MP4$'
+			secondary_pattern_writing_back = r'^GB\d+(\d{4})\.MP4$'
+
 
 	# GoPro 360 video
 	match = None
@@ -143,14 +153,13 @@ for video_file in video_files:
 	# Add SJCAM HERE!
 
 
-# Match those files
-primary_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
-secondary_segments = sorted([x for x in video_files if re.search(secondary_pattern, x)])
 
 # If there are multiple chapters, identify whether the user wants all files combined 
 # together, or each camera start as a separate file
 allasone = ""
 print(f"\nDetected Camera Type: {camera_type}")
+if camera_type == "FUSION":
+	print("When outputting fusion videos, front and back cameras are handled seperately")
 if chapters == 0:
 	print("\nNo chapters detected, assuming all single camera starts")
 	while allasone != "C" and allasone != "E":
@@ -160,7 +169,7 @@ if chapters == 0:
 
 if chapters == 1:
 	print("\nMultiple chapters detected")
-	while allasone != "A" and allasone != "I" and allasone != "E":
+	while allasone != "C" and allasone != "I" and allasone != "E":
 		allasone = input("(C)ombine into one file, (I)ndividual files for each camera start or (E)xit: ")	
 	if allasone == "E":
 		exit()
@@ -188,22 +197,94 @@ if output_directory_exists == False:
 		exit ()
 
 
+# Output processes for combining into one file.
+
 if allasone == "C":
-	print("The following files and segments have been located:\n")
-	# Create a new file to write the sorted filenames to
-	with open("sorted_files.txt", "w") as f:
-		for i, primary_file in enumerate(primary_segments):
-			print(f"Primary Segment {i+1}")
-			print(primary_file)
-			# Write the primary segment file name to the output file
-			f.write("file\t" + primary_file + "\n")
-			primary_segment_num = int(re.search(primary_pattern_writing, primary_file).group(1))
-			matching_secondary_segments = sorted([x for x in secondary_segments if primary_segment_num == int(re.search(secondary_pattern_writing, x).group(1)[:4])])
-			print("Secondary segments")
-			for secondary_file in matching_secondary_segments:
-				print(secondary_file)
-				# Write the secondary segment filenames to output file
-				f.write("file\t" + secondary_file + "\n")
+	if camera_type == "GP5":
+		# Match those files
+		primary_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
+		secondary_segments = sorted([x for x in video_files if re.search(secondary_pattern, x)])
+		print("The following files and segments have been located:")
+		print(f"Debug: {primary_segments}")
+		print(f"Debug: {secondary_segments}")
+		print("Creating lists...")
+		# Create a new file to write the sorted filenames to
+		with open("sorted_files.txt", "w") as f:
+			for i, primary_file in enumerate(primary_segments):
+				print(f"Primary Segment {i+1}")
+				print(primary_file)
+				# Write the primary segment file name to the output file
+				f.write("file\t" + primary_file + "\n")
+				primary_segment_num = int(re.search(primary_pattern_writing, primary_file).group(1))
+				matching_secondary_segments = sorted([x for x in secondary_segments if primary_segment_num == int(re.search(secondary_pattern_writing, x).group(1)[:4])])
+				print("Secondary segments")
+				for secondary_file in matching_secondary_segments:
+					print(secondary_file)
+					# Write the secondary segment filenames to output file
+					f.write("file\t" + secondary_file + "\n")
+
+	if camera_type == "FUSION":
+		# Match those files
+		primary_segments_front = sorted([x for x in video_files if re.search(primary_pattern_front, x)])
+		secondary_segments_front = sorted([x for x in video_files if re.search(secondary_pattern_front, x)])
+		primary_segments_back = sorted([x for x in video_files if re.search(primary_pattern_back, x)])
+		secondary_segments_back = sorted([x for x in video_files if re.search(secondary_pattern_back, x)])
+		print("The following files and segments have been located:")
+		print(f"Debug: {primary_segments_front}")
+		print(f"Debug: {secondary_segments_front}")
+		print(f"Debug: {primary_segments_back}")
+		print(f"Debug: {secondary_segments_back}")
+		print("Creating lists...")
+		# Create a new file to write the sorted filenames to
+		with open("sorted_files.txt", "w") as f:
+			for i, primary_file in enumerate(primary_segments_front):
+				print(f"Primary Segment Front {i+1}")
+				print(primary_file)
+				# Write the primary segment file name to the output file
+				f.write("file\t" + primary_file + "\n")
+				primary_segment_num = int(re.search(primary_pattern_writing_front, primary_file).group(1))
+				matching_secondary_segments = sorted([x for x in secondary_segments_front if primary_segment_num == int(re.search(secondary_pattern_writing_front, x).group(1)[:4])])
+				print("Secondary segments")
+				for secondary_file in matching_secondary_segments:
+					print(secondary_file)
+					# Write the secondary segment filenames to output file
+					f.write("file\t" + secondary_file + "\n")
+			for i, primary_file in enumerate(primary_segments_back):
+				print(f"Primary Segment Back {i+1}")
+				print(primary_file)
+				# Write the primary segment file name to the output file
+				f.write("file\t" + primary_file + "\n")
+				primary_segment_num = int(re.search(primary_pattern_writing_back, primary_file).group(1))
+				matching_secondary_segments = sorted([x for x in secondary_segments_back if primary_segment_num == int(re.search(secondary_pattern_writing_back, x).group(1)[:4])])
+				print("Secondary segments")
+				for secondary_file in matching_secondary_segments:
+					print(secondary_file)
+					# Write the secondary segment filenames to output file
+					f.write("file\t" + secondary_file + "\n")
+				
+
+	if camera_type == "":
+		# Match those files
+		primary_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
+		secondary_segments = sorted([x for x in video_files if re.search(secondary_pattern, x)])
+		print("The following files and segments have been located:")
+		print(f"Debug: {primary_segments}")
+		print(f"Debug: {secondary_segments}")
+		print("Creating lists...")
+		# Create a new file to write the sorted filenames to
+		with open("sorted_files.txt", "w") as f:
+			for i, primary_file in enumerate(primary_segments):
+				print(f"Primary Segment {i+1}")
+				print(primary_file)
+				# Write the primary segment file name to the output file
+				f.write("file\t" + primary_file + "\n")
+				primary_segment_num = int(re.search(primary_pattern_writing, primary_file).group(1))
+				matching_secondary_segments = sorted([x for x in secondary_segments if primary_segment_num == int(re.search(secondary_pattern_writing, x).group(1)[:4])])
+				print("Secondary segments")
+				for secondary_file in matching_secondary_segments:
+					print(secondary_file)
+					# Write the secondary segment filenames to output file
+					f.write("file\t" + secondary_file + "\n")
 
 	print("List Complete...")
 	outputname = input("Please enter filename for joined output (without file extension): ")
@@ -213,9 +294,13 @@ if allasone == "C":
 	# Call FFMPEG using the full filename and directory for output
 	subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename ])
 	print(f"Hopefully you have a file called {outputname} in {output_directory}. It should have all the files combined in one.")
-	exit()
+	exit()				
+				
 
-if allasone == "I":
+# Outputting Individual Files...
+
+
+if allasone == "I" and camera_type == "GP5":
 	segmentcount = 0
 	# We'll increment this counter for every file segment, that way when we get to writing the files we know how many.
 	# Don't open file yet...because we need that to happen separately for each segment.
@@ -236,31 +321,50 @@ if allasone == "I":
 				f.write("file\t" + secondary_file + "\n")
 		f.close()
 
-	print("List Complete...")
-	outputname = input("Please enter basename for joined output (without file extension): ")
-	# initiate loop to call FFMPEG
-	# subtract one from segment count because the filenames start at 0, and segment count started at 1.
-	# I could use another variable here, but why would I?
+
+if allasone == "I" and camera_type == "":
+	segmentcount = 0
+	# We'll increment this counter for every file segment, that way when we get to writing the files we know how many.
+	# Don't open file yet...because we need that to happen separately for each segment.
+	print("The following files and segments have been located:/n")
+	for i, primary_file in enumerate(primary_segments):
+		segmentcount = segmentcount + 1
+		print(f"Primary Segment {i+1}")
+		print(primary_file)
+		with open("sorted_file%s.txt" % i, "w") as f:
+			# Write the primary segment file name to the output file
+			f.write("file\t" + primary_file + "\n")
+			primary_segment_num = int(re.search(primary_pattern_writing, primary_file).group(1))
+			matching_secondary_segments = sorted([x for x in secondary_segments if primary_segment_num == int(re.search(secondary_pattern_writing, x).group(1)[:4])])
+			print("Secondary segments")
+			for secondary_file in matching_secondary_segments:
+				print(secondary_file)
+				# Write the secondary segment filenames to output file
+				f.write("file\t" + secondary_file + "\n")
+		f.close()
+
+outputname = input("Please enter basename for joined output (without file extension): ")
+print("List Complete. Calling FFMPEG to do the actual joining...")
+
+# initiate loop to call FFMPEG
+# subtract one from segment count because the filenames start at 0, and segment count started at 1.
+# I could use another variable here, but why would I?
+segmentcount = segmentcount - 1
+while segmentcount > -1:
+	# Munge together a filename containing the current segment and the all the other bits of the name
+	current_segment_file = "sorted_file" + str(segmentcount) + ".txt"
+	# print(f"\nDEBUG OUTPUT: {current_segment_file}")
+	# join together yon filename and the path input earlier
+	segment_count_stringified = str(segmentcount)
+	output_full_name = outputname + segment_count_stringified + ".mp4"
+	output_full_filename_with_path = os.path.join(output_directory, output_full_name)
+	# print(f"\nDEBUG OUTPUT: {output_full_filename}")
+	# print(f"Launching FFMPEG for " + output_full_filename )
+	# Call FFMPEG using the sorted_files filename as a source and outputting to outputname
+	# print(f"\nDEBUG OUTPUT: {current_segment_file}")
+	subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
 	segmentcount = segmentcount - 1
-	while segmentcount > -1:
-		# Munge together a filename containing the current segment and the all the other bits of the name
-		current_segment_file = "sorted_file" + str(segmentcount) + ".txt"
-		# print(f"\nDEBUG OUTPUT: {current_segment_file}")
-		# join together yon filename and the path input earlier
-		segment_count_stringified = str(segmentcount)
-		output_full_name = outputname + segment_count_stringified + ".mp4"
-		output_full_filename_with_path = os.path.join(output_directory, output_full_name)
-		# print(f"\nDEBUG OUTPUT: {output_full_filename}")
-		# print(f"Launching FFMPEG for " + output_full_filename )
-		# Call FFMPEG using the sorted_files filename as a source and outputting to outputname
-		# print(f"\nDEBUG OUTPUT: {current_segment_file}")
-		subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
-		segmentcount = segmentcount - 1
 		
 		
-	print(f"Tada! You have many files. You are truly blessed.")
-	exit()
-	
-else:
-	print("Uncaught error (I mean, I did tons of error checking, so this is totally unexpected... ;) )")
-	exit()
+print(f"Tada! You have many files. You are truly blessed.")
+exit()
