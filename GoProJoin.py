@@ -82,23 +82,24 @@ for video_file in video_files:
 
 
 	# GoPro 360 video
-	match = None
-	match = re.search (r'^.*GS\d+\.MP4$', video_file) # 360 naming convention, difficult to test for chapters so just going to assume yes at the moment
-	if match:
-		print("Currently this script doesn't handle GoPro 360 videos")
-		exit()
-		camera_type = "360"
-		chapters = 1
-		if custom_naming == "D":
-			primary_pattern = r'^GS\d+\.MP4$'
-			primary_pattern_writing = r'^GS(\d+)\.MP4$'
-			secondary_pattern = r'^GS\d+\.MP4$'
-			secondary_pattern_writing = r'^GS\d+(\d{4})\.MP4$'
-		if custom_naming == "C":
-			primary_pattern = r'^.*GS\d+\.MP4$'
-			primary_pattern_writing = r'^.*GS(\d+)\.MP4$'
-			secondary_pattern = r'^.*GS\d+\.MP4$'
-			secondary_pattern_writing = r'^.*GS\d+(\d{4})\.MP4$'
+	# Disabled because GP360 videos can use the same naming convention as Heros, and this would break that.
+	# match = None
+	# match = re.search (r'^.*GS\d+\.MP4$', video_file) # 360 naming convention, difficult to test for chapters so just going to assume yes at the moment
+	# if match:
+	# 	print("Currently this script doesn't handle GoPro 360 videos")
+	# 	exit()
+	# 	camera_type = "360"
+	# 	chapters = 1
+	# 	if custom_naming == "D":
+	# 		primary_pattern = r'^GS\d+\.MP4$'
+	# 		primary_pattern_writing = r'^GS(\d+)\.MP4$'
+	# 		secondary_pattern = r'^GS\d+\.MP4$'
+	# 		secondary_pattern_writing = r'^GS\d+(\d{4})\.MP4$'
+	# 	if custom_naming == "C":
+	# 		primary_pattern = r'^.*GS\d+\.MP4$'
+	# 		primary_pattern_writing = r'^.*GS(\d+)\.MP4$'
+	# 		secondary_pattern = r'^.*GS\d+\.MP4$'
+	# 		secondary_pattern_writing = r'^.*GS\d+(\d{4})\.MP4$'
 
 	# GoPro Hero 6-11
 	# Filenames can start GH or GS
