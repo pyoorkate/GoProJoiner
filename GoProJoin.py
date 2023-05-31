@@ -7,7 +7,7 @@ input_directory_contents = os.listdir(input_directory)
 video_files = [fname for fname in input_directory_contents if fname.endswith('.MP4')] #Filtering only the MP4 files.
 
 print("Less and less basic GoPro File Sort-and-Concatinator")
-print("======================v0.4==========================")
+print("======================v0.3==========================")
 print("Should work for all GoPros from 2 through 11 and GoPro Fusion")
 print("Operates in current working directory & assumes FFMPEG is available in your path\n")
 
@@ -82,24 +82,21 @@ for video_file in video_files:
 
 
 	# GoPro 360 video
-	# Disabled because GP360 videos can use the same naming convention as Heros, and this would break that.
-	# match = None
-	# match = re.search (r'^.*GS\d+\.MP4$', video_file) # 360 naming convention, difficult to test for chapters so just going to assume yes at the moment
-	# if match:
-	# 	print("Currently this script doesn't handle GoPro 360 videos")
-	# 	exit()
-	# 	camera_type = "360"
-	# 	chapters = 1
-	# 	if custom_naming == "D":
-	# 		primary_pattern = r'^GS\d+\.MP4$'
-	# 		primary_pattern_writing = r'^GS(\d+)\.MP4$'
-	# 		secondary_pattern = r'^GS\d+\.MP4$'
-	# 		secondary_pattern_writing = r'^GS\d+(\d{4})\.MP4$'
-	# 	if custom_naming == "C":
-	# 		primary_pattern = r'^.*GS\d+\.MP4$'
-	# 		primary_pattern_writing = r'^.*GS(\d+)\.MP4$'
-	# 		secondary_pattern = r'^.*GS\d+\.MP4$'
-	# 		secondary_pattern_writing = r'^.*GS\d+(\d{4})\.MP4$'
+	match = None
+	match = re.search (r'^.*GS\d+\.MP4$', video_file) # 360 naming convention, difficult to test for chapters so just going to assume yes at the moment
+	if match:
+		camera_type = "360"
+		chapters = 1
+		if custom_naming == "D":
+			primary_pattern = r'^GS01\d+\.MP4$'
+			primary_pattern_writing = r'^GS(\d+)\.MP4$'
+			secondary_pattern = r'^GS(0[2-9]|[1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^GS(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
+		if custom_naming == "C":
+			primary_pattern = r'^.*GS01\d+\.MP4$'
+			primary_pattern_writing = r'^.*GS(\d+)\.MP4$'
+			secondary_pattern = r'^.*GS(0[2-9]|[1-9][0-9])\d+\.MP4$'
+			secondary_pattern_writing = r'^.*GS(0[2-9]|[1-9][0-9])(\d{4})\.MP4$'
 
 	# GoPro Hero 6-11
 	# Filenames can start GH or GS
@@ -263,7 +260,7 @@ if allasone == "C":
 					# Write the secondary segment filenames to output file
 					f.write("file\t" + secondary_file + "\n")
 				
-	if camera_type == "HERO_H" or camera_type == "HERO_X":
+	if camera_type == "HERO_H" or camera_type == "HERO_X" or camera_type == "360":
 		# Match those files
 		primary_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
 		secondary_segments = sorted([x for x in video_files if re.search(secondary_pattern, x)])
@@ -379,7 +376,7 @@ if allasone == "I":
 		f.close()
 						
 
-	if camera_type == "HERO_H" or camera_type == "HERO_X":
+	if camera_type == "HERO_H" or camera_type == "HERO_X" or camera_type == "360":
 		# Match those files
 		primary_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
 		secondary_segments = sorted([x for x in video_files if re.search(secondary_pattern, x)])
@@ -439,6 +436,11 @@ if allasone == "I":
 					# Write the secondary segment filenames to output file
 					f.write("file\t" + secondary_file + "\n")
 			f.close()
+			
+		
+	if camera_type == "":
+		print("No valid camera type detected, exiting (sorry!).")
+		exit()
 
 	print("Matched list complete...")
 	outputname = input("Please enter basename for output (without file extension): ")
