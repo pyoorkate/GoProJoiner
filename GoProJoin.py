@@ -310,6 +310,8 @@ if allasone == "C":
 if allasone == "I":
 	if camera_type == "GP5":
 		segmentcount = 0
+		primary_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
+		secondary_segments = sorted([x for x in video_files if re.search(secondary_pattern, x)])
 		# We'll increment this counter for every file segment, that way when we get to writing the files we know how many.
 		# Don't open file yet...because we need that to happen separately for each segment.
 		print("The following files and segments have been located:/n")
