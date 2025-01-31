@@ -1,21 +1,23 @@
 import os
 import re
 import subprocess
+from datetime import datetime, timedelta
 
 input_directory = os.getcwd()
 input_directory_contents = os.listdir(input_directory)
 video_files = [fname for fname in input_directory_contents if fname.endswith('.MP4')] #Filtering only the MP4 files.
 
-print("Less and less basic GoPro File Sort-and-Concatinator")
-print("======================v0.3==========================")
+print("Less and less basic GoPro and SJCam File Sort-and-Concatinator")
+print("============================v0.4==============================")
 print("Should work for all GoPros from 2 through 11 and GoPro Fusion")
+print("Will also attempt to identify and sort SJcam files")
 print("Operates in current working directory & assumes FFMPEG is available in your path\n")
 
 # Does user use a custom file naming convention
 # At present custom naming is just playing fast and loose and just uses a wildcard regex
 custom_naming = ""
-print("Do you use custom or default GoPro filenames")
-print("============================================\n")
+print("Do you use custom or default filenames")
+print("======================================\n")
 print("Note: Custom assumes that anything before the standard camera prefix is the custom name")
 while custom_naming != "D" and custom_naming != "C":
  	custom_naming = input("Enter (D)efault or (C)ustom: ")
@@ -148,7 +150,17 @@ for video_file in video_files:
 		exit()
 
 	# SJCam
-	# Add SJCAM HERE!
+	# Since SJCam's don't provide a proper way to identify camera starts using file names we're just going to set a primary pattern
+	# The actual sorting and identifing of camera starts will be done differently, so we'll have to force the chapter setting, too.
+	match = None
+	match = re.search (r'^(\d{8})\d{6}_(\d{4})\.MP4$', video_file)
+	if match:
+		camera_type = "SJCAM8"
+		chapters = 2
+		# We would have to do a lot more work to identify chapters on an SJCam so rather than check now we'll just ask the question
+		# about whether the user wants them separated into chapters regardless of state
+		primary_pattern = r'^(\d{8})\d{6}_(\d{4})\.MP4$' 
+		
 
 
 
@@ -167,6 +179,14 @@ if chapters == 0:
 
 if chapters == 1:
 	print("\nMultiple chapters detected")
+	while allasone != "C" and allasone != "I" and allasone != "E":
+		allasone = input("(C)ombine into one file, (I)ndividual files for each camera start or (E)xit: ")	
+	if allasone == "E":
+		exit()
+
+if chapters == 2:
+	print("\nNote! SJCam Detected: Chapter check performed during output.")
+	print("\nIf chapters are detected during processing would you like to...")
 	while allasone != "C" and allasone != "I" and allasone != "E":
 		allasone = input("(C)ombine into one file, (I)ndividual files for each camera start or (E)xit: ")	
 	if allasone == "E":
@@ -294,13 +314,64 @@ if allasone == "C":
 					# Write the secondary segment filenames to output file
 					f.write("file\t" + secondary_file + "\n")
 
+	# Deepseek AI Code -- kinda.
+	if camera_type == "SJCAM8":
+		segmentcount = 1 # this is for use later when joining files
+		# Match and sort into recorded order the files
+		SJ_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
+		print("The following files have been located:")
+		print(f"Files: {SJ_segments}")
+		print("Sorting, combining and creating lists...")
+		# Define the regular expression pattern
+		primary_pattern = r'^(\d{8})\d{6}_(\d{4})\.MP4$'
+		# Output file to store the sorted list of filenames
+		output_file = 'sorted_files.txt'
+
+		# List to store file information
+		files_info = []
+
+		# Iterate over files in the directory
+		for filename in os.listdir(input_directory):
+			if re.match(primary_pattern, filename):
+        		# Get the full path of the file
+				file_path = os.path.join(input_directory, filename)
+	
+        		# Use exiftool to extract the creation time
+				result = subprocess.run(['exiftool', '-CreateDate', '-d', '%Y:%m:%d %H:%M:%S', file_path], stdout=subprocess.PIPE, text=True)
+        
+        		# Extract the creation time from the exiftool output
+				creation_time_str = result.stdout.split(': ')[1].strip()
+				# Convert the creation time string to a datetime object
+				creation_time = datetime.strptime(creation_time_str, '%Y:%m:%d %H:%M:%S')
+        
+				# Append the file information to the list
+				files_info.append((creation_time, filename))
+
+		# Sort the files based on creation time
+		files_info.sort(key=lambda x: x[0])
+
+		# Write the sorted filenames to the output file
+		with open(output_file, 'w') as f:
+			for creation_time, filename in files_info:
+				f.write(f"file '{filename}'\n")
+		# End of DeepSeek AI Code
+		
+
+
+				
+
 	print("Matched list complete...")
 	outputname = input("Please enter filename for output (without file extension): ")
 	outputname = outputname + ".mp4"
 	# join together yon filename and the path input earlier
 	output_full_filename = os.path.join(output_directory, outputname)
-	# Call FFMPEG using the full filename and directory for output
-	subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename ])
+	if camera_type != "SJCAM8":
+		# Call FFMPEG using the full filename and directory for output
+		subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename ])
+	if camera_type == "SJCAM8":
+		# Call FFMPEG using the full filename and directory for output with modified option for SJCAM
+		subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', output_full_filename ])
+
 	print(f"Hopefully you have a file called {outputname} in {output_directory}. It should have all the files combined in one.")
 	exit()				
 				
@@ -418,6 +489,90 @@ if allasone == "I":
 					f.write("file\t" + secondary_file + "\n")
 			f.close()
 
+	# Deepseek AI Code
+	if camera_type == "SJCAM8":
+		segmentcount = 0 # this is for use in joining
+		# Define the regular expression pattern
+		primary_pattern = r'^(\d{8})\d{6}_(\d{4})\.MP4$'
+		
+		# List to store file information
+		files_info = []
+
+		# Iterate over files in the directory
+		for filename in os.listdir(input_directory):
+			if re.match(primary_pattern, filename):
+			# Get the full path of the file
+				file_path = os.path.join(input_directory, filename)
+
+				# Use exiftool to extract the creation time and duration
+				result = subprocess.run(
+					['exiftool', '-CreateDate', '-Duration', '-d', '%Y:%m:%d %H:%M:%S', file_path],
+					stdout=subprocess.PIPE, text=True
+				)
+	
+				# Parse the exiftool output
+				output_lines = result.stdout.splitlines()
+				creation_time_str = None
+				duration_str = None
+
+				for line in output_lines:
+					if 'Create Date' in line:
+						creation_time_str = line.split(': ')[1].strip()
+					if 'Duration' in line:
+						duration_str = line.split(': ')[1].strip()
+
+				# Convert the creation time string to a datetime object
+				creation_time = datetime.strptime(creation_time_str, '%Y:%m:%d %H:%M:%S')
+
+				# Convert the duration string to a timedelta object
+				# Duration is in the format "HH:MM:SS" or "SS sec" or "MM:SS"
+				if ':' in duration_str:
+					hours, minutes, seconds = map(float, duration_str.split(':'))
+					duration = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+				else:
+					# Handle cases where duration is in seconds only
+					duration = timedelta(seconds=float(duration_str.split()[0]))
+
+				# Append the file information to the list
+				files_info.append({
+					'filename': filename,
+					'creation_time': creation_time,
+					'duration': duration
+				})
+				segmentcount = segmentcount + 1
+
+		# Sort the files based on creation time
+		files_info.sort(key=lambda x: x['creation_time'])
+
+		# Group files into chapters and write to individual files
+		chapter_number = 0
+		previous_end_time = None
+		chapter_files = []
+
+		for file_info in files_info:
+			filename = file_info['filename']
+			creation_time = file_info['creation_time']
+			duration = file_info['duration']
+    
+			# Calculate the end time of the current file
+			end_time = creation_time + duration
+			
+			# Check if there is a gap of more than 2 seconds between the previous end time and the current start time
+			if previous_end_time and (creation_time - previous_end_time > timedelta(seconds=2)):
+				chapter_number += 1  # Start a new chapter
+
+			# Create or append to the chapter file
+			chapter_file = os.path.join(input_directory, f'sorted_file{chapter_number}.txt')
+			with open(chapter_file, 'a') as f:
+				f.write(f"file '{filename}'\n")
+
+			# Update the previous end time
+			previous_end_time = end_time
+
+	# End of Deepseek AI code
+
+
+
 	if camera_type == "BLANK":
 		segmentcount = 0
 		# We'll increment this counter for every file segment, that way when we get to writing the files we know how many.
@@ -462,7 +617,10 @@ if allasone == "I":
 		output_full_filename_with_path = os.path.join(output_directory, output_full_name)
 		# Call FFMPEG using the sorted_files filename as a source and outputting to outputname
 		# print(f"\nDEBUG OUTPUT: {current_segment_file}")
-		subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
+		if camera_type != "SJCAM8":
+			subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
+		if camera_type == "SJCAM8":
+			subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', output_full_filename_with_path ])
 		segmentcount = segmentcount - 1
 		
 	print(f"Tada! You have many files. You are truly blessed.")
