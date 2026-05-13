@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess
+import shutil
 from datetime import datetime, timedelta
 
 input_directory = os.getcwd()
@@ -8,10 +9,29 @@ input_directory_contents = os.listdir(input_directory)
 video_files = [fname for fname in input_directory_contents if fname.endswith('.MP4')] #Filtering only the MP4 files.
 
 print("Less and less basic GoPro and SJCam File Sort-and-Concatinator")
-print("============================v0.4==============================")
+print("=========================2026/05/13===========================")
 print("Should work for all GoPros from 2 through 11 and GoPro Fusion")
 print("Will also attempt to identify and sort SJcam files")
-print("Operates in current working directory & assumes FFMPEG is available in your path\n")
+print("Operates in current working directory, assumes FFMPEG and exiftools is available in your path")
+print("Note: on Windows, an exiftools.exe must exist or a symlink to exiftools(-k).exe needs to be created\n") 
+
+# List of required external tools
+required_tools = ['ffmpeg', 'exiftool']
+missing_tools = []
+
+for tool in required_tools:
+    if shutil.which(tool) is None:
+        missing_tools.append(tool)
+
+if missing_tools:
+    print("Error: Missing Required Dependencies")
+    print("====================================")
+    for tool in missing_tools:
+        print(f" - {tool} was not found in your system PATH.")
+    
+    print("\nPlease install the missing tools or add their folder to your PATH.")
+    print("Program terminating.")
+    exit(1)
 
 # Does user use a custom file naming convention
 # At present custom naming is just playing fast and loose and just uses a wildcard regex
@@ -232,14 +252,15 @@ if allasone == "C":
 				print(f"Primary Segment {i+1}")
 				print(primary_file)
 				# Write the primary segment file name to the output file
-				f.write("file\t" + primary_file + "\n")
+				f.write(f"file '{primary_file}'\n")
 				primary_segment_num = int(re.search(primary_pattern_writing, primary_file).group(1))
 				matching_secondary_segments = sorted([x for x in secondary_segments if primary_segment_num == int(re.search(secondary_pattern_writing, x).group(1)[:4])])
 				print("Secondary segments")
 				for secondary_file in matching_secondary_segments:
 					print(secondary_file)
 					# Write the secondary segment filenames to output file
-					f.write("file\t" + secondary_file + "\n")
+					f.write(f"file '{secondary_file}'\n")
+					#f.write("file\t" + secondary_file + "\n") - improved windows compatiblity
 
 	if camera_type == "FUSION":
 		# Match those files
@@ -547,6 +568,7 @@ if allasone == "I":
 		# Group files into chapters and write to individual files
 		chapter_number = 0
 		previous_end_time = None
+		segmentcount = chapter_number + 1
 		chapter_files = []
 
 		for file_info in files_info:
@@ -609,7 +631,7 @@ if allasone == "I":
 	segmentcount = segmentcount - 1
 	while segmentcount > -1:
 		# Munge together a filename containing the current segment and the all the other bits of the name
-		current_segment_file = "sorted_file" + str(segmentcount) + ".txt"
+		current_segment_file = os.path.join(input_directory, f"sorted_file{segmentcount}.txt")
 	
 		# join together yon filename and the path input earlier
 		segment_count_stringified = str(segmentcount)
