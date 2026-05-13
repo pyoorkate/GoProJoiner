@@ -11,7 +11,7 @@ video_files = [fname for fname in input_directory_contents if fname.endswith('.M
 spinner = ["/", "-", "\\", "|"] # Define the spinner frames
 
 print("Less and less basic GoPro and SJCam File Sort-and-Concatinator")
-print("=========================2026/05/13===========================")
+print("=======================2026/05/13==v3=========================")
 print("Should work for all GoPros from 2 through 11 and GoPro Fusion")
 print("Will also attempt to identify and sort SJcam files")
 print("Operates in current working directory, assumes FFMPEG and exiftools is available in your path")
@@ -518,7 +518,6 @@ if allasone == "I":
 					f.write("file\t" + secondary_file + "\n")
 			f.close()
 
-	# Deepseek AI Code
 	if camera_type == "SJCAM8":
 		segmentcount = 0 # this is for use in joining
 		# Define the regular expression pattern
@@ -580,7 +579,6 @@ if allasone == "I":
 		# Group files into chapters and write to individual files
 		chapter_number = 0
 		previous_end_time = None
-		segmentcount = chapter_number + 1
 		chapter_files = []
 
 		for file_info in files_info:
@@ -602,7 +600,8 @@ if allasone == "I":
 
 			# Update the previous end time
 			previous_end_time = end_time
-			print("\nMetadata extraction and sorting complete.")
+		segmentcount = chapter_number + 1
+		print("\nMetadata extraction and sorting complete.")
 
 	# End of Deepseek AI code
 
