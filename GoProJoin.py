@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import subprocess
 import shutil
 from datetime import datetime, timedelta
@@ -519,10 +520,17 @@ if allasone == "I":
 		# List to store file information
 		files_info = []
 
+		# Define the spinner frames
+			spinner = ["/", "-", "\\", "|"]
+			print("Calling exiftool to analyze files...")
+
 		# Iterate over files in the directory
-		for filename in os.listdir(input_directory):
-			if re.match(primary_pattern, filename):
-			# Get the full path of the file
+		for i, filename in enumerate(os.listdir(input_directory)):
+    		if re.match(primary_pattern, filename):
+				# Update the spinner on the current line, \r moves the cursor to the start of the line, end="" prevents a newline
+				sys.stdout.write(f"\r {spinner[i % len(spinner)]} Analyzing: {filename}")
+				sys.stdout.flush()
+				# Get the full path of the file
 				file_path = os.path.join(input_directory, filename)
 
 				# Use exiftool to extract the creation time and duration
@@ -590,6 +598,7 @@ if allasone == "I":
 
 			# Update the previous end time
 			previous_end_time = end_time
+			print("\nMetadata extraction and sorting complete.")
 
 	# End of Deepseek AI code
 
