@@ -403,10 +403,10 @@ if allasone == "C":
 	output_full_filename = os.path.join(output_directory, outputname)
 	if camera_type != "SJCAM8":
 		# Call FFMPEG using the full filename and directory for output
-		subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename ])
+		subprocess.run(['ffmpeg', '-y', '-loglevel', 'warning', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename ])
 	if camera_type == "SJCAM8":
 		# Call FFMPEG using the full filename and directory for output with modified option for SJCAM
-		subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', output_full_filename ])
+		subprocess.run(['ffmpeg', '-y', '-loglevel', 'warning', '-f', 'concat', '-i', 'sorted_files.txt', '-c', 'copy', '-map', '0:0', '-map', '0:1', output_full_filename ])
 
 	print(f"Hopefully you have a file called {outputname} in {output_directory}. It should have all the files combined in one.")
 	exit()				
@@ -672,10 +672,10 @@ if allasone == "I":
 		# Call FFMPEG using the sorted_files filename as a source and outputting to outputname
 		# print(f"\nDEBUG OUTPUT: {current_segment_file}")
 		if camera_type != "SJCAM8":
-			subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
+			subprocess.run(['ffmpeg', '-y', '-f', '-loglevel', 'warning', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
 		if camera_type == "SJCAM8":
 			# subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', output_full_filename_with_path ])
-			subprocess.run(['ffmpeg', '-y', '-fflags', '+genpts', '-f', 'concat', '-safe', '0', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-avoid_negative_ts', 'make_zero', output_full_filename_with_path ]) # +genpts Generates new timestamps, -safe Prevents some "file not found" errors on Windows, 
+			subprocess.run(['ffmpeg', '-y', '-loglevel', 'warning', '-fflags', '+genpts', '-f', 'concat', '-safe', '0', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-avoid_negative_ts', 'make_zero', output_full_filename_with_path ]) # +genpts Generates new timestamps, -safe Prevents some "file not found" errors on Windows, 
 		segmentcount = segmentcount - 1
 		
 	print(f"Tada! You have many files. You are truly blessed.")
