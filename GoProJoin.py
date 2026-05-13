@@ -11,7 +11,7 @@ video_files = [fname for fname in input_directory_contents if fname.endswith('.M
 spinner = ["/", "-", "\\", "|"] # Define the spinner frames
 
 print("Less and less basic GoPro and SJCam File Sort-and-Concatinator")
-print("=======================2026/05/13==v3=========================")
+print("=======================2026/05/13==v4=========================") #Yes, that kind of a day.
 print("Should work for all GoPros from 2 through 11 and GoPro Fusion")
 print("Will also attempt to identify and sort SJcam files")
 print("Operates in current working directory, assumes FFMPEG and exiftools is available in your path")
@@ -519,6 +519,9 @@ if allasone == "I":
 			f.close()
 
 	if camera_type == "SJCAM8":
+		SJ_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
+		print("The following files have been located:")
+		print(f"Files: {SJ_segments}/n")
 		segmentcount = 0 # this is for use in joining
 		# Define the regular expression pattern
 		primary_pattern = r'^(\d{8})\d{6}_(\d{4})\.MP4$'
