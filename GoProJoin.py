@@ -11,7 +11,7 @@ video_files = [fname for fname in input_directory_contents if fname.endswith('.M
 spinner = ["/", "-", "\\", "|"] # Define the spinner frames
 
 print("Less and less basic GoPro and SJCam File Sort-and-Concatinator")
-print("=======================2026/05/13==v4=========================") #Yes, that kind of a day.
+print("=======================2026/05/13==v5=========================") #Yes, that kind of a day.
 print("Should work for all GoPros from 2 through 11 and GoPro Fusion")
 print("Will also attempt to identify and sort SJcam files")
 print("Operates in current working directory, assumes FFMPEG and exiftools is available in your path")
@@ -370,11 +370,21 @@ if allasone == "C":
         
         		# Extract the creation time from the exiftool output
 				creation_time_str = result.stdout.split(': ')[1].strip()
-				# Convert the creation time string to a datetime object
-				creation_time = datetime.strptime(creation_time_str, '%Y:%m:%d %H:%M:%S')
-        
-				# Append the file information to the list
-				files_info.append((creation_time, filename))
+				
+
+				if creation_time_str is None:
+					# Likely a corrupt file, so skip it and report the error.
+					sys.stdout.write(f"\r[!] Failed to extract metadata from {filename}. File may be corrupt. Skipping.\n")
+					sys.stdout.flush()
+					continue # Move to the next file in the listdir loop
+				try:
+					# Convert the creation time string to a datetime object
+					creation_time = datetime.strptime(creation_time_str, '%Y:%m:%d %H:%M:%S')
+					# Append the file information to the list
+					files_info.append((creation_time, filename, duration))
+				except ValueError:
+					print(f"\n[!] Date format error in {filename}, skipping.")
+					continue
 
 		# Sort the files based on creation time
 		files_info.sort(key=lambda x: x[0])
@@ -383,10 +393,7 @@ if allasone == "C":
 		with open(output_file, 'w') as f:
 			for creation_time, filename in files_info:
 				f.write(f"file '{filename}'\n")
-		# End of DeepSeek AI Code
-		
-
-
+	
 				
 
 	print("Matched list complete...")
