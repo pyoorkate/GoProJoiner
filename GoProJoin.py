@@ -575,6 +575,7 @@ if allasone == "I":
 					'duration': duration
 				})
 				segmentcount = segmentcount + 1
+				print(f"New segment identified - start time {creation_time}")
 
 		# Sort the files based on creation time
 		files_info.sort(key=lambda x: x['creation_time'])
@@ -604,7 +605,7 @@ if allasone == "I":
 			# Update the previous end time
 			previous_end_time = end_time
 		segmentcount = chapter_number + 1
-		print("\nMetadata extraction and sorting complete.")
+		print(f"Metadata extraction and sorting complete. {segmentcount} Segment(s) identified")
 
 	# End of Deepseek AI code
 
