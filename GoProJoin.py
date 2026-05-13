@@ -521,7 +521,7 @@ if allasone == "I":
 	if camera_type == "SJCAM8":
 		SJ_segments = sorted([x for x in video_files if re.search(primary_pattern, x)])
 		print("The following files have been located:")
-		print(f"Files: {SJ_segments}/n")
+		print(f"Files: {SJ_segments}\n")
 		segmentcount = 0 # this is for use in joining
 		# Define the regular expression pattern
 		primary_pattern = r'^(\d{8})\d{6}_(\d{4})\.MP4$'
