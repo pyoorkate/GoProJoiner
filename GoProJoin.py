@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 input_directory = os.getcwd()
 input_directory_contents = os.listdir(input_directory)
 video_files = [fname for fname in input_directory_contents if fname.endswith('.MP4')] #Filtering only the MP4 files.
+spinner = ["/", "-", "\\", "|"] # Define the spinner frames
 
 print("Less and less basic GoPro and SJCam File Sort-and-Concatinator")
 print("=========================2026/05/13===========================")
@@ -357,6 +358,12 @@ if allasone == "C":
 			if re.match(primary_pattern, filename):
         		# Get the full path of the file
 				file_path = os.path.join(input_directory, filename)
+				print("Calling exiftool to analyze files...")
+				# Update the spinner on the current line
+				# \r moves the cursor to the start of the line, end="" prevents a newline
+				sys.stdout.write(f"\r {spinner[i % len(spinner)]} Analyzing: {filename}")
+				sys.stdout.flush()
+				file_path = os.path.join(input_directory, filename)
 	
         		# Use exiftool to extract the creation time
 				result = subprocess.run(['exiftool', '-CreateDate', '-d', '%Y:%m:%d %H:%M:%S', file_path], stdout=subprocess.PIPE, text=True)
@@ -520,10 +527,7 @@ if allasone == "I":
 		# List to store file information
 		files_info = []
 
-		# Define the spinner frames
-			spinner = ["/", "-", "\\", "|"]
-			print("Calling exiftool to analyze files...")
-
+		print("Calling exiftool to analyze files...")
 		# Iterate over files in the directory
 		for i, filename in enumerate(os.listdir(input_directory)):
     		if re.match(primary_pattern, filename):
