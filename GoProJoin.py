@@ -529,7 +529,7 @@ if allasone == "I":
 		print("Calling exiftool to analyze files...")
 		# Iterate over files in the directory
 		for i, filename in enumerate(os.listdir(input_directory)):
-    		if re.match(primary_pattern, filename):
+			if re.match(primary_pattern, filename):
 				# Update the spinner on the current line, \r moves the cursor to the start of the line, end="" prevents a newline
 				sys.stdout.write(f"\r {spinner[i % len(spinner)]} Analyzing: {filename}")
 				sys.stdout.flush()
