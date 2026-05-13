@@ -563,24 +563,33 @@ if allasone == "I":
 					if 'Duration' in line:
 						duration_str = line.split(': ')[1].strip()
 
-				# Convert the creation time string to a datetime object
-				creation_time = datetime.strptime(creation_time_str, '%Y:%m:%d %H:%M:%S')
+					if creation_time_str is None:
+						# Likely a corrupt file, so skip it and report the error.
+						sys.stdout.write(f"\r[!] Failed to extract metadata from {filename}. File may be corrupt. Skipping.\n")
+						sys.stdout.flush()
+						continue # Move to the next file in the listdir loop
+					try:
+						# Convert the creation time string to a datetime object
+						creation_time = datetime.strptime(creation_time_str, '%Y:%m:%d %H:%M:%S')
+						# Convert the duration string to a timedelta object
+						# Duration is in the format "HH:MM:SS" or "SS sec" or "MM:SS"
+						if ':' in duration_str:
+							hours, minutes, seconds = map(float, duration_str.split(':'))
+							duration = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+						else:
+							# Handle cases where duration is in seconds only
+							duration = timedelta(seconds=float(duration_str.split()[0]))
+						# Append the file information to the list
+						files_info.append({
+						'filename': filename,
+						'creation_time': creation_time,
+						'duration': duration
+						})					
+					
+					except ValueError:
+						print(f"\n[!] Date format error in {filename}, skipping.")
+						continue
 
-				# Convert the duration string to a timedelta object
-				# Duration is in the format "HH:MM:SS" or "SS sec" or "MM:SS"
-				if ':' in duration_str:
-					hours, minutes, seconds = map(float, duration_str.split(':'))
-					duration = timedelta(hours=hours, minutes=minutes, seconds=seconds)
-				else:
-					# Handle cases where duration is in seconds only
-					duration = timedelta(seconds=float(duration_str.split()[0]))
-
-				# Append the file information to the list
-				files_info.append({
-					'filename': filename,
-					'creation_time': creation_time,
-					'duration': duration
-				})
 				segmentcount = segmentcount + 1
 				print(f"New segment identified - start time {creation_time}")
 
