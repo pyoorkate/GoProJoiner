@@ -657,7 +657,8 @@ if allasone == "I":
 		if camera_type != "SJCAM8":
 			subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-map', '0:3', output_full_filename_with_path ])
 		if camera_type == "SJCAM8":
-			subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', output_full_filename_with_path ])
+			# subprocess.run(['ffmpeg', '-y', '-f', 'concat', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', output_full_filename_with_path ])
+			subprocess.run(['ffmpeg', '-y', '-fflags', '+genpts', '-f', 'concat', '-safe', '0', '-i', current_segment_file, '-c', 'copy', '-map', '0:0', '-map', '0:1', '-avoid_negative_ts', 'make_zero', output_full_filename_with_path ]) # +genpts Generates new timestamps, -safe Prevents some "file not found" errors on Windows, 
 		segmentcount = segmentcount - 1
 		
 	print(f"Tada! You have many files. You are truly blessed.")
